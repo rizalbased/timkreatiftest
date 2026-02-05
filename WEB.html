@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Media Display Informasi EMKA</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap");
+
+    :root {
+      --bg: #0b0616;
+      --bg-2: #120a22;
+      --glass: rgba(18, 10, 34, 0.7);
+      --glass-strong: rgba(28, 16, 56, 0.75);
+      --border: rgba(186, 120, 255, 0.35);
+      --accent: #b66bff;
+      --accent-2: #6ad7ff;
+      --text: #f6f1ff;
+      --muted: rgba(255,255,255,0.65);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      width: 100vw;
+      height: 100vh;
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px circle at 10% 10%, rgba(98, 51, 170, 0.6), transparent 60%),
+        radial-gradient(900px circle at 90% 20%, rgba(82, 196, 255, 0.25), transparent 60%),
+        radial-gradient(700px circle at 60% 80%, rgba(176, 108, 255, 0.2), transparent 60%),
+        linear-gradient(160deg, var(--bg), var(--bg-2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .display-frame {
+      width: min(100vw, calc(100vh * 16 / 9));
+      height: min(100vh, calc(100vw * 9 / 16));
+      padding: 18px;
+      border-radius: 28px;
+      background: rgba(10, 6, 24, 0.75);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 30px 60px rgba(10, 6, 24, 0.7);
+      display: grid;
+      grid-template-rows: 1fr 56px;
+      gap: 14px;
+      backdrop-filter: blur(18px);
+    }
+
+    .display-columns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      min-height: 0;
+      height: 100%;
+    }
+
+    .column {
+      display: grid;
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .card {
+      position: relative;
+      background: var(--glass);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 16px;
+      backdrop-filter: blur(18px);
+      box-shadow: 0 16px 30px rgba(10, 6, 24, 0.5);
+      overflow: hidden;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(182, 107, 255, 0.15), rgba(106, 215, 255, 0.12));
+      pointer-events: none;
+    }
+
+    .card > * { position: relative; z-index: 1; }
+
+    .media-card {
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: 100%;
+    }
+
+    .media-stage {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .media-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .media-slide.active { opacity: 1; }
+
+    .media-slide video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .media-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 18px;
+      background: linear-gradient(180deg, rgba(12, 8, 24, 0) 20%, rgba(12, 8, 24, 0.8) 100%);
+    }
+
+    .media-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      width: fit-content;
+    }
+
+    .media-title {
+      margin: 10px 0 4px;
+      font-family: "Outfit", sans-serif;
+      font-size: 1.6rem;
+    }
+
+    .media-desc {
+      margin: 0;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .media-count {
+      margin-top: 10px;
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.65);
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      font-family: "Outfit", sans-serif;
+      font-size: 1.05rem;
+    }
+
+    .section-sub {
+      margin: -4px 0 8px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: capitalize;
+    }
+
+    .list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .list li {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(8, 5, 18, 0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .list .index {
+      font-weight: 700;
+      color: var(--accent-2);
+      min-width: 28px;
+      text-align: center;
+    }
+
+    .list .text {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .time-card {
+      display: grid;
+      gap: 10px;
+    }
+
+    .time-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .time-display {
+      font-family: "Outfit", sans-serif;
+      font-size: 2.2rem;
+      letter-spacing: 1px;
+    }
+
+    .date-display {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .glass-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.3);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      width: fit-content;
+    }
+
+    .live-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(182, 107, 255, 0.25);
+      border: 1px solid rgba(182, 107, 255, 0.7);
+      color: var(--text);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+      animation: neonPulse 2.4s ease-in-out infinite;
+    }
+
+    .live-btn::after {
+      content: "";
+      position: absolute;
+      inset: -6px;
+      border-radius: inherit;
+      background: radial-gradient(circle, rgba(182, 107, 255, 0.4), transparent 70%);
+      opacity: 0.6;
+      z-index: -1;
+      filter: blur(10px);
+    }
+
+    @keyframes neonPulse {
+      0%, 100% {
+        box-shadow: 0 0 8px rgba(182, 107, 255, 0.45), 0 0 16px rgba(106, 215, 255, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 18px rgba(182, 107, 255, 0.8), 0 0 28px rgba(106, 215, 255, 0.5);
+      }
+    }
+
+    .ticker {
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: var(--glass-strong);
+      backdrop-filter: blur(18px);
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      padding: 0 16px;
+      font-size: 1rem;
+    }
+
+    .ticker-track {
+      white-space: nowrap;
+      padding-left: 100%;
+      animation: ticker 24s linear infinite;
+    }
+
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to { transform: translateX(-100%); }
+    }
+
+    @media (max-width: 900px) {
+      .media-title { font-size: 1.3rem; }
+      .time-display { font-size: 1.8rem; }
+      .ticker { font-size: 0.9rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="display-frame">
+    <div class="display-columns">
+      <section class="card media-card">
+        <div class="media-stage" id="media-stage"></div>
+        <div class="media-overlay">
+          <div class="media-chip" id="media-chip">FOTO</div>
+          <h2 class="media-title" id="media-title">Kegiatan Siswa</h2>
+          <p class="media-desc" id="media-desc">Dokumentasi foto dan video kegiatan terbaru.</p>
+          <div class="media-count" id="media-count">1 / 1</div>
+        </div>
+      </section>
+
+      <div class="column">
+        <section class="card">
+          <h3 class="section-title">Berita Hari Ini</h3>
+          <ul class="list" id="news-list"></ul>
+        </section>
+      </div>
+
+      <div class="column">
+        <section class="card time-card">
+          <div class="time-header">
+            <div class="glass-pill" id="period">Dini Hari</div>
+            <button class="live-btn" type="button">Live Info</button>
+          </div>
+          <div class="time-display" id="clock">00:00:00</div>
+          <div class="date-display" id="date">Rabu, 4 Februari 2026</div>
+        </section>
+        <section class="card">
+          <h3 class="section-title">Tugas Akan Datang</h3>
+          <ul class="list" id="tasks-list"></ul>
+        </section>
+      </div>
+    </div>
+
+    <footer class="ticker">
+      <div class="ticker-track" id="running-text">Selamat datang di media display EMKA.</div>
+    </footer>
+  </div>
+
+  <script>
+    const STORAGE = {
+      running: "emka_display_running",
+      news: "emka_display_news",
+      tasks: "emka_display_tasks",
+      media: "emka_display_media",
+      images: "emka_display_images",
+      videos: "emka_display_videos"
+    };
+
+    const defaults = {
+      running: "Selamat datang di media display EMKA.",
+      news: [
+        "Upacara bendera jam 07:00.",
+        "Kegiatan ekstrakurikuler dimulai 15:30."
+      ],
+      tasks: [
+        "PR Matematika dikumpulkan Jumat.",
+        "Presentasi IPA minggu depan."
+      ],
+      caption: "Dokumentasi foto dan video kegiatan terbaru."
+    };
+
+    const defaultMedia = [
+      {
+        type: "image",
+        label: "Kegiatan Siswa",
+        caption: "Dokumentasi foto dan video kegiatan terbaru.",
+        bg: "linear-gradient(135deg, #6a2fd1, #b66bff 60%, #3c78ff)"
+      },
+      {
+        type: "image",
+        label: "Prestasi Sekolah",
+        caption: "Bangga dengan pencapaian siswa setiap hari.",
+        bg: "linear-gradient(135deg, #3c78ff, #6ad7ff 60%, #b66bff)"
+      }
+    ];
+
+    const dateEl = document.getElementById("date");
+    const clockEl = document.getElementById("clock");
+    const periodEl = document.getElementById("period");
+    const runningTextEl = document.getElementById("running-text");
+    const newsListEl = document.getElementById("news-list");
+    const tasksListEl = document.getElementById("tasks-list");
+    const stageEl = document.getElementById("media-stage");
+    const chipEl = document.getElementById("media-chip");
+    const titleEl = document.getElementById("media-title");
+    const descEl = document.getElementById("media-desc");
+    const countEl = document.getElementById("media-count");
+
+    let mediaItems = [];
+    let slideIndex = 0;
+    let slideTimer = null;
+    let lastHash = "";
+
+    function loadList(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        const data = JSON.parse(raw);
+        return Array.isArray(data) ? data : fallback;
+      } catch (err) {
+        return fallback;
+      }
+    }
+
+    function normalizeMedia(items) {
+      return items
+        .filter(item => item && item.src)
+        .map(item => ({
+          type: item.type || "image",
+          src: item.src,
+          label: item.label || "",
+          caption: item.caption || ""
+        }));
+    }
+
+    function getPeriod(hours) {
+      if (hours >= 0 && hours < 4) return "Dini Hari";
+      if (hours < 10) return "Pagi";
+      if (hours < 15) return "Siang";
+      if (hours < 19) return "Sore";
+      return "Malam";
+    }
+
+    function updateClock() {
+      const now = new Date();
+      clockEl.textContent = now.toLocaleTimeString("id-ID");
+      dateEl.textContent = now.toLocaleDateString("id-ID", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+      periodEl.textContent = getPeriod(now.getHours());
+    }
+
+    function renderList(container, items, emptyText) {
+      container.innerHTML = "";
+      if (!items.length) {
+        const li = document.createElement("li");
+        li.innerHTML = "<span class=\"index\">--</span><span class=\"text\">" + emptyText + "</span>";
+        container.appendChild(li);
+        return;
+      }
+
+      items.slice(0, 6).forEach((item, idx) => {
+        const li = document.createElement("li");
+        li.innerHTML =
+          "<span class=\"index\">" + String(idx + 1).padStart(2, "0") + "</span>" +
+          "<span class=\"text\">" + item + "</span>";
+        container.appendChild(li);
+      });
+    }
+
+    function buildMediaItems() {
+      const storedMedia = normalizeMedia(loadList(STORAGE.media, []));
+      if (storedMedia.length) return storedMedia;
+
+      const images = loadList(STORAGE.images, []).map(item => ({ ...item, type: "image" }));
+      const videos = loadList(STORAGE.videos, []).map(item => ({ ...item, type: "video" }));
+      const legacy = normalizeMedia([...images, ...videos]);
+      if (legacy.length) return legacy;
+
+      return defaultMedia;
+    }
+
+    function buildSlides(items) {
+      stageEl.innerHTML = "";
+      items.forEach(item => {
+        const slide = document.createElement("div");
+        slide.className = "media-slide";
+        slide.dataset.type = item.type;
+
+        if (item.type === "image") {
+          const bg = item.src ? "url(\"" + item.src + "\")" : item.bg || "linear-gradient(135deg, #5b2b82, #1f8a70)";
+          slide.style.backgroundImage = bg;
+        } else {
+          const video = document.createElement("video");
+          video.src = item.src;
+          video.muted = true;
+          video.playsInline = true;
+          video.preload = "metadata";
+          slide.appendChild(video);
+        }
+
+        stageEl.appendChild(slide);
+      });
+    }
+
+    function showSlide(index) {
+      const slides = stageEl.querySelectorAll(".media-slide");
+      if (!slides.length) return;
+
+      slides.forEach(slide => {
+        slide.classList.remove("active");
+        const video = slide.querySelector("video");
+        if (video) {
+          video.pause();
+        }
+      });
+
+      slideIndex = index % slides.length;
+      const currentSlide = slides[slideIndex];
+      currentSlide.classList.add("active");
+
+      const currentItem = mediaItems[slideIndex] || {};
+      const type = currentItem.type || "image";
+      chipEl.textContent = type === "video" ? "VIDEO" : "FOTO";
+      titleEl.textContent = currentItem.label || (type === "video" ? "Video Kegiatan" : "Foto Kegiatan");
+      descEl.textContent = currentItem.caption || defaults.caption;
+      countEl.textContent = (slideIndex + 1) + " / " + slides.length;
+
+      if (type === "video") {
+        const video = currentSlide.querySelector("video");
+        if (video) {
+          video.currentTime = 0;
+          video.play().catch(() => {});
+        }
+      }
+
+      clearTimeout(slideTimer);
+      const duration = type === "video" ? 14000 : 10000;
+      slideTimer = setTimeout(() => showSlide(slideIndex + 1), duration);
+    }
+
+    function syncContent() {
+      const news = loadList(STORAGE.news, defaults.news);
+      const tasks = loadList(STORAGE.tasks, defaults.tasks);
+      const running = localStorage.getItem(STORAGE.running) || defaults.running;
+
+      renderList(newsListEl, news, "Belum ada berita hari ini.");
+      renderList(tasksListEl, tasks, "Belum ada tugas akan datang.");
+      runningTextEl.textContent = running;
+
+      const newMedia = buildMediaItems();
+      const hash = JSON.stringify(newMedia);
+      if (hash !== lastHash) {
+        mediaItems = newMedia;
+        lastHash = hash;
+        buildSlides(mediaItems);
+        showSlide(0);
+      }
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+    syncContent();
+    setInterval(syncContent, 2000);
+  </script>
+</body>
+</html>

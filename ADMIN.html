@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Media Display EMKA</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+
+    :root {
+      --bg: #0b0716;
+      --bg-2: #120a22;
+      --card: rgba(18, 10, 34, 0.7);
+      --glass: rgba(255,255,255,0.06);
+      --border: rgba(168, 122, 255, 0.35);
+      --accent: #b66bff;
+      --accent-2: #6ad7ff;
+      --text: #f6f1ff;
+      --muted: rgba(255,255,255,0.65);
+      --danger: #ff8aa5;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(800px circle at 10% 10%, rgba(98, 51, 170, 0.6), transparent 60%),
+        radial-gradient(900px circle at 90% 20%, rgba(82, 196, 255, 0.35), transparent 60%),
+        linear-gradient(160deg, var(--bg), var(--bg-2));
+      padding: 28px 20px 40px;
+      overflow-x: hidden;
+    }
+
+    .glow {
+      position: fixed;
+      inset: auto auto 10% 10%;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(182, 107, 255, 0.25);
+      filter: blur(60px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow.secondary {
+      inset: 12% 12% auto auto;
+      background: rgba(106, 215, 255, 0.25);
+    }
+
+    .admin-shell {
+      position: relative;
+      z-index: 1;
+      width: min(1200px, 100%);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 20px 24px;
+      border-radius: 20px;
+      background: rgba(18, 10, 34, 0.75);
+      border: 1px solid var(--border);
+      box-shadow: 0 18px 30px rgba(13, 6, 32, 0.6);
+      backdrop-filter: blur(16px);
+    }
+
+    .admin-title h1 {
+      margin: 0;
+      font-family: "Outfit", sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.5px;
+    }
+
+    .admin-title p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .status-pill {
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(182, 107, 255, 0.2);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .status-pill.active {
+      box-shadow: 0 0 16px rgba(182, 107, 255, 0.6);
+    }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .panel {
+      position: relative;
+      padding: 18px;
+      border-radius: 18px;
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 12px 24px rgba(10, 6, 24, 0.5);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .panel.wide {
+      grid-column: 1 / -1;
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(182, 107, 255, 0.12), rgba(106, 215, 255, 0.1));
+      pointer-events: none;
+    }
+
+    .panel > * { position: relative; z-index: 1; }
+
+    .panel h2 {
+      margin: 0 0 10px;
+      font-family: "Outfit", sans-serif;
+      font-size: 1.2rem;
+    }
+
+    .panel p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      margin-top: 8px;
+      background: rgba(6, 4, 15, 0.6);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    input[type="number"] {
+      appearance: textfield;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: rgba(255,255,255,0.4);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .input-row input[type="url"],
+    .input-row input[type="text"],
+    .input-row input[type="number"] {
+      flex: 1;
+    }
+
+    .toggle-row {
+      margin-top: 10px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .toggle input {
+      width: auto;
+      margin: 0;
+      accent-color: var(--accent-2);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: rgba(182, 107, 255, 0.2);
+      border: 1px solid rgba(182, 107, 255, 0.5);
+    }
+
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(182, 107, 255, 0.3); }
+
+    .btn.secondary {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.16);
+    }
+
+    .btn.ghost {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      font-size: 0.8rem;
+      padding: 6px 10px;
+    }
+
+    .btn.danger {
+      border-color: rgba(255, 138, 165, 0.6);
+      color: var(--danger);
+    }
+
+    .media-list {
+      margin-top: 12px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .media-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px;
+      background: rgba(6, 4, 15, 0.6);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .media-item.drag-over { outline: 2px dashed rgba(182, 107, 255, 0.5); }
+
+    .drag-handle {
+      width: 28px;
+      height: 56px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      cursor: grab;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    .thumb {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: #120a22;
+      background-size: cover;
+      background-position: center;
+      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .thumb.video {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+    }
+
+    .media-meta {
+      flex: 1;
+      min-width: 0;
+      display: grid;
+      gap: 6px;
+    }
+
+    .meta-input {
+      width: 100%;
+      padding: 8px 10px;
+      background: rgba(12, 8, 24, 0.7);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.85rem;
+    }
+
+    .meta-input--small {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .media-meta .sub {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .media-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .count-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      font-size: 0.75rem;
+      margin-left: 8px;
+    }
+
+    .empty {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px dashed rgba(255,255,255,0.2);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .publish-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-radius: 16px;
+      background: rgba(12, 8, 24, 0.7);
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(18px);
+    }
+
+    .status-text {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .preview-frame {
+      margin-top: 12px;
+      width: 100%;
+      height: clamp(220px, 32vw, 360px);
+      background: rgba(6, 4, 15, 0.6);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 10px;
+      display: grid;
+      grid-template-rows: 1fr 32px;
+      gap: 8px;
+    }
+
+    .preview-columns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      min-height: 0;
+    }
+
+    .preview-card {
+      position: relative;
+      border-radius: 14px;
+      background: rgba(12, 8, 24, 0.65);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 8px;
+      overflow: hidden;
+    }
+
+    .preview-media {
+      padding: 0;
+    }
+
+    .preview-stage {
+      position: absolute;
+      inset: 0;
+    }
+
+    .preview-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .preview-slide.active { opacity: 1; }
+
+    .preview-slide video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 8px;
+      background: linear-gradient(180deg, rgba(12, 8, 24, 0) 20%, rgba(12, 8, 24, 0.9) 100%);
+    }
+
+    .preview-chip {
+      font-size: 0.5rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      background: rgba(255,255,255,0.15);
+      padding: 2px 6px;
+      border-radius: 999px;
+      width: fit-content;
+    }
+
+    .preview-title {
+      margin: 6px 0 2px;
+      font-family: "Outfit", sans-serif;
+      font-size: 0.75rem;
+    }
+
+    .preview-desc {
+      font-size: 0.6rem;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .preview-count {
+      margin-top: 4px;
+      font-size: 0.55rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .preview-title-text {
+      margin: 0 0 6px;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+    }
+
+    .preview-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 6px;
+    }
+
+    .preview-list li {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 6px;
+      align-items: start;
+      padding: 4px 6px;
+      border-radius: 10px;
+      background: rgba(6, 4, 15, 0.7);
+      border: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.55rem;
+    }
+
+    .preview-list .index {
+      font-weight: 700;
+      color: var(--accent-2);
+      min-width: 18px;
+      text-align: center;
+    }
+
+    .preview-time {
+      display: grid;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+
+    .preview-clock {
+      font-family: "Outfit", sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+
+    .preview-date {
+      font-size: 0.6rem;
+      color: var(--muted);
+    }
+
+    .preview-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      font-size: 0.5rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      width: fit-content;
+    }
+
+    .preview-ticker {
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(18, 10, 34, 0.8);
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      padding: 0 10px;
+      font-size: 0.65rem;
+    }
+
+    .preview-ticker-track {
+      white-space: nowrap;
+      padding-left: 100%;
+      animation: previewTicker 16s linear infinite;
+    }
+
+    @keyframes previewTicker {
+      from { transform: translateX(0); }
+      to { transform: translateX(-100%); }
+    }
+
+    @media (max-width: 720px) {
+      .admin-header { padding: 16px; }
+      .admin-title h1 { font-size: 1.6rem; }
+      .input-row { flex-direction: column; align-items: stretch; }
+      .panel.wide { grid-column: auto; }
+      .preview-frame { height: 240px; }
+      .preview-columns { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="glow secondary"></div>
+
+  <div class="admin-shell">
+    <div class="admin-header">
+      <div class="admin-title">
+        <h1>Admin Media Display EMKA</h1>
+        <p>Kelola slideshow foto/video, berita hari ini, teks berjalan, dan tugas siswa.</p>
+      </div>
+      <div class="status-pill" id="status-pill">Siap</div>
+    </div>
+
+    <div class="admin-grid">
+      <section class="panel">
+        <h2>Teks Berjalan</h2>
+        <p>Tampil di bagian bawah layar display.</p>
+        <label class="label" for="running-input">Teks</label>
+        <textarea id="running-input" rows="3" placeholder="Contoh: Selamat datang di media display EMKA."></textarea>
+      </section>
+
+      <section class="panel">
+        <h2>Berita Hari Ini</h2>
+        <p>Tulis satu berita per baris.</p>
+        <label class="label" for="news-input">Daftar Berita</label>
+        <textarea id="news-input" rows="6" placeholder="Contoh: 2026-02-04 10:00 - Lomba sains"></textarea>
+        <div class="toggle-row">
+          <label class="toggle">
+            <input type="checkbox" id="news-today-toggle">
+            <span>Mode Hari Ini (filter otomatis)</span>
+          </label>
+          <div class="note">Gunakan format: "Senin 10:00 - ...", "2026-02-04 10:00 - ...", atau "Setiap hari 10:00 - ...".</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Tugas Akan Datang</h2>
+        <p>Tulis satu tugas per baris.</p>
+        <label class="label" for="tasks-input">Daftar Tugas</label>
+        <textarea id="tasks-input" rows="6" placeholder="Contoh: Jumat - PR Matematika"></textarea>
+        <div class="toggle-row">
+          <label class="toggle">
+            <input type="checkbox" id="tasks-today-toggle">
+            <span>Mode Hari Ini (filter otomatis)</span>
+          </label>
+          <div class="note">Gunakan format: "Rabu - Ulangan IPA", "2026-02-04 - Presentasi".</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Tambah Foto <span class="count-badge" id="image-count">0</span></h2>
+        <p>Tambahkan foto kegiatan untuk slideshow.</p>
+        <div class="input-row">
+          <input type="url" id="image-url" placeholder="Tempel URL foto">
+          <button class="btn secondary" id="add-image-url" type="button">Tambah</button>
+        </div>
+        <div class="input-row" style="margin-top:10px;">
+          <input type="text" id="image-title" placeholder="Judul slide (opsional)">
+          <input type="text" id="image-caption" placeholder="Deskripsi singkat (opsional)">
+        </div>
+        <div class="input-row" style="margin-top:10px;">
+          <input type="number" id="image-duration" min="1" step="1" placeholder="Durasi (detik)">
+          <input type="file" id="image-file" accept="image/*" multiple>
+        </div>
+        <div class="note">Urutan tampil diatur pada panel "Urutan Media".</div>
+      </section>
+
+      <section class="panel">
+        <h2>Tambah Video <span class="count-badge" id="video-count">0</span></h2>
+        <p>Tambahkan video kegiatan untuk slideshow.</p>
+        <div class="input-row">
+          <input type="url" id="video-url" placeholder="Tempel URL video (mp4)">
+          <button class="btn secondary" id="add-video-url" type="button">Tambah</button>
+        </div>
+        <div class="input-row" style="margin-top:10px;">
+          <input type="text" id="video-title" placeholder="Judul slide (opsional)">
+          <input type="text" id="video-caption" placeholder="Deskripsi singkat (opsional)">
+        </div>
+        <div class="input-row" style="margin-top:10px;">
+          <input type="number" id="video-duration" min="1" step="1" placeholder="Durasi (detik)">
+          <input type="file" id="video-file" accept="video/*" multiple>
+        </div>
+        <div class="note">Video besar lebih aman pakai URL eksternal.</div>
+      </section>
+
+      <section class="panel wide">
+        <h2>Urutan Media <span class="count-badge" id="media-count">0</span></h2>
+        <p>Tarik untuk mengatur urutan tampil (campur foto dan video).</p>
+        <div class="media-list" id="media-list"></div>
+        <button class="btn ghost danger" id="clear-media" type="button">Hapus Semua Media</button>
+        <div class="note">Maksimal 50MB per file. Penyimpanan browser bisa lebih kecil dari 50MB.</div>
+      </section>
+
+      <section class="panel wide">
+        <h2>Preview Display</h2>
+        <p>Preview mini sebelum publish.</p>
+        <div class="preview-frame">
+          <div class="preview-columns">
+            <div class="preview-card preview-media">
+              <div class="preview-stage" id="preview-stage"></div>
+              <div class="preview-overlay">
+                <div class="preview-chip" id="preview-chip">FOTO</div>
+                <div class="preview-title" id="preview-title">Kegiatan Siswa</div>
+                <div class="preview-desc" id="preview-desc">Dokumentasi kegiatan terbaru.</div>
+                <div class="preview-count" id="preview-count">1 / 1</div>
+              </div>
+            </div>
+            <div class="preview-card">
+              <div class="preview-title-text">Berita</div>
+              <ul class="preview-list" id="preview-news"></ul>
+            </div>
+            <div class="preview-card">
+              <div class="preview-time">
+                <div class="preview-pill" id="preview-period">Dini Hari</div>
+                <div class="preview-clock" id="preview-clock">00:00:00</div>
+                <div class="preview-date" id="preview-date">Rabu, 4 Februari 2026</div>
+              </div>
+              <div class="preview-title-text">Tugas</div>
+              <ul class="preview-list" id="preview-tasks"></ul>
+            </div>
+          </div>
+          <div class="preview-ticker">
+            <div class="preview-ticker-track" id="preview-running">Selamat datang di media display EMKA.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="publish-bar">
+      <div class="status-text" id="status-text">Perubahan belum dipublish.</div>
+      <button class="btn" id="publish-btn" type="button">Publish ke Display</button>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE = {
+      running: "emka_display_running",
+      news: "emka_display_news",
+      tasks: "emka_display_tasks",
+      newsToday: "emka_display_news_today",
+      tasksToday: "emka_display_tasks_today",
+      media: "emka_display_media",
+      images: "emka_display_images",
+      videos: "emka_display_videos"
+    };
+
+    const MAX_FILE_SIZE = 50 * 1024 * 1024;
+
+    const defaults = {
+      running: "Selamat datang di media display EMKA. Info terbaru langsung dari admin.",
+      news: [
+        "Upacara bendera jam 07:00.",
+        "Kegiatan ekstrakurikuler dimulai 15:30."
+      ],
+      tasks: [
+        "PR Matematika dikumpulkan Jumat.",
+        "Presentasi IPA minggu depan."
+      ]
+    };
+
+    const fallbackPreviewMedia = [
+      {
+        type: "image",
+        label: "Preview Media",
+        caption: "Tambahkan media untuk melihat preview.",
+        bg: "linear-gradient(135deg, #6a2fd1, #b66bff 60%, #3c78ff)"
+      }
+    ];
+
+    function loadList(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        const data = JSON.parse(raw);
+        return Array.isArray(data) ? data : fallback;
+      } catch (err) {
+        return fallback;
+      }
+    }
+
+    function parseDuration(value) {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+    }
+
+    function normalizeMedia(items) {
+      return items
+        .filter(item => item && item.src)
+        .map(item => ({
+          type: item.type || "image",
+          src: item.src,
+          label: item.label || "",
+          caption: item.caption || "",
+          duration: parseDuration(item.duration)
+        }));
+    }
+
+    const storedMedia = normalizeMedia(loadList(STORAGE.media, []));
+    const legacyImages = loadList(STORAGE.images, []).map(item => ({ ...item, type: "image" }));
+    const legacyVideos = loadList(STORAGE.videos, []).map(item => ({ ...item, type: "video" }));
+    const initialMedia = storedMedia.length
+      ? storedMedia
+      : normalizeMedia([...legacyImages, ...legacyVideos]);
+
+    const state = {
+      running: localStorage.getItem(STORAGE.running) || defaults.running,
+      news: loadList(STORAGE.news, defaults.news),
+      tasks: loadList(STORAGE.tasks, defaults.tasks),
+      newsToday: localStorage.getItem(STORAGE.newsToday) === "true",
+      tasksToday: localStorage.getItem(STORAGE.tasksToday) === "true",
+      media: initialMedia
+    };
+
+    if (!storedMedia.length && initialMedia.length) {
+      localStorage.setItem(STORAGE.media, JSON.stringify(initialMedia));
+    }
+
+    const runningInput = document.getElementById("running-input");
+    const newsInput = document.getElementById("news-input");
+    const tasksInput = document.getElementById("tasks-input");
+    const newsTodayToggle = document.getElementById("news-today-toggle");
+    const tasksTodayToggle = document.getElementById("tasks-today-toggle");
+    const imageUrlInput = document.getElementById("image-url");
+    const videoUrlInput = document.getElementById("video-url");
+    const imageTitleInput = document.getElementById("image-title");
+    const imageCaptionInput = document.getElementById("image-caption");
+    const imageDurationInput = document.getElementById("image-duration");
+    const videoTitleInput = document.getElementById("video-title");
+    const videoCaptionInput = document.getElementById("video-caption");
+    const videoDurationInput = document.getElementById("video-duration");
+    const imageFileInput = document.getElementById("image-file");
+    const videoFileInput = document.getElementById("video-file");
+    const mediaList = document.getElementById("media-list");
+    const imageCount = document.getElementById("image-count");
+    const videoCount = document.getElementById("video-count");
+    const mediaCount = document.getElementById("media-count");
+    const statusText = document.getElementById("status-text");
+    const statusPill = document.getElementById("status-pill");
+
+    const previewStage = document.getElementById("preview-stage");
+    const previewChip = document.getElementById("preview-chip");
+    const previewTitle = document.getElementById("preview-title");
+    const previewDesc = document.getElementById("preview-desc");
+    const previewCount = document.getElementById("preview-count");
+    const previewNews = document.getElementById("preview-news");
+    const previewTasks = document.getElementById("preview-tasks");
+    const previewRunning = document.getElementById("preview-running");
+    const previewClock = document.getElementById("preview-clock");
+    const previewDate = document.getElementById("preview-date");
+    const previewPeriod = document.getElementById("preview-period");
+
+    runningInput.value = state.running;
+    newsInput.value = state.news.join("\n");
+    tasksInput.value = state.tasks.join("\n");
+    newsTodayToggle.checked = state.newsToday;
+    tasksTodayToggle.checked = state.tasksToday;
+
+    const dragState = { index: null };
+    let previewItems = [];
+    let previewIndex = 0;
+    let previewTimer = null;
+
+    function parseLines(text) {
+      return text
+        .split("\n")
+        .map(line => line.trim())
+        .filter(Boolean);
+    }
+
+    function flashStatus(message) {
+      statusText.textContent = message;
+      statusPill.textContent = "Tersimpan";
+      statusPill.classList.add("active");
+      clearTimeout(flashStatus.timer);
+      flashStatus.timer = setTimeout(() => {
+        statusPill.classList.remove("active");
+        statusPill.textContent = "Siap";
+      }, 2000);
+    }
+
+    function markDirty() {
+      statusText.textContent = "Perubahan belum dipublish.";
+      statusPill.textContent = "Perlu Publish";
+    }
+
+    function persistMedia() {
+      try {
+        localStorage.setItem(STORAGE.media, JSON.stringify(state.media));
+        return true;
+      } catch (err) {
+        statusText.textContent = "Penyimpanan penuh. Kurangi media.";
+        return false;
+      }
+    }
+
+    function formatIsoDate(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return year + "-" + month + "-" + day;
+    }
+
+    function getTodayInfo() {
+      const now = new Date();
+      const dayName = now.toLocaleDateString("id-ID", { weekday: "long" });
+      return {
+        iso: formatIsoDate(now),
+        dayLower: dayName.toLowerCase(),
+        display: now.toLocaleDateString("id-ID", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        })
+      };
+    }
+
+    function getPeriod(hours) {
+      if (hours >= 0 && hours < 4) return "Dini Hari";
+      if (hours < 10) return "Pagi";
+      if (hours < 15) return "Siang";
+      if (hours < 19) return "Sore";
+      return "Malam";
+    }
+
+    function filterDaily(items, today) {
+      const matched = [];
+      const fallback = [];
+
+      items.forEach(item => {
+        const trimmed = item.trim();
+        if (!trimmed) return;
+
+        const lower = trimmed.toLowerCase();
+        let hasPrefix = false;
+        let added = false;
+
+        if (lower.startsWith("setiap hari")) {
+          hasPrefix = true;
+          const cleaned = trimmed.replace(/^setiap hari\s*[-:|]?\s*/i, "").trim();
+          matched.push(cleaned || trimmed);
+          added = true;
+        } else if (lower.startsWith("harian")) {
+          hasPrefix = true;
+          const cleaned = trimmed.replace(/^harian\s*[-:|]?\s*/i, "").trim();
+          matched.push(cleaned || trimmed);
+          added = true;
+        } else if (lower.startsWith("hari ini")) {
+          hasPrefix = true;
+          const cleaned = trimmed.replace(/^hari ini\s*[-:|]?\s*/i, "").trim();
+          matched.push(cleaned || trimmed);
+          added = true;
+        } else {
+          const dateMatch = trimmed.match(/^(\d{4}-\d{2}-\d{2})\b\s*[-:|]?\s*/);
+          if (dateMatch) {
+            hasPrefix = true;
+            if (dateMatch[1] === today.iso) {
+              const rest = trimmed.slice(dateMatch[0].length).trim();
+              matched.push(rest || trimmed);
+              added = true;
+            }
+          }
+
+          const dayMatch = trimmed.match(/^(minggu|ahad|senin|selasa|rabu|kamis|jumat|sabtu)\b\s*[-:|]?\s*/i);
+          if (dayMatch) {
+            hasPrefix = true;
+            let day = dayMatch[1].toLowerCase();
+            if (day === "ahad") day = "minggu";
+            if (day === today.dayLower) {
+              const rest = trimmed.slice(dayMatch[0].length).trim();
+              matched.push(rest || trimmed);
+              added = true;
+            }
+          }
+        }
+
+        if (!hasPrefix) {
+          fallback.push(trimmed);
+        } else if (!added) {
+          return;
+        }
+      });
+
+      return matched.length ? matched : fallback;
+    }
+
+    function renderMediaList(container, items) {
+      container.innerHTML = "";
+      if (!items.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "Belum ada media.";
+        container.appendChild(empty);
+        return;
+      }
+
+      items.forEach((item, index) => {
+        const row = document.createElement("div");
+        row.className = "media-item";
+
+        const handle = document.createElement("div");
+        handle.className = "drag-handle";
+        handle.textContent = "::";
+        handle.title = "Drag untuk mengurutkan";
+        handle.draggable = true;
+
+        handle.addEventListener("dragstart", (event) => {
+          dragState.index = index;
+          row.classList.add("dragging");
+          event.dataTransfer.setData("text/plain", String(index));
+          event.dataTransfer.effectAllowed = "move";
+        });
+
+        handle.addEventListener("dragend", () => {
+          row.classList.remove("dragging");
+          row.classList.remove("drag-over");
+          dragState.index = null;
+        });
+
+        row.addEventListener("dragover", (event) => {
+          event.preventDefault();
+          row.classList.add("drag-over");
+        });
+
+        row.addEventListener("dragleave", () => {
+          row.classList.remove("drag-over");
+        });
+
+        row.addEventListener("drop", (event) => {
+          event.preventDefault();
+          row.classList.remove("drag-over");
+          const from = dragState.index;
+          const to = index;
+          if (from === null || from === to) return;
+          const [moved] = items.splice(from, 1);
+          items.splice(to, 0, moved);
+          dragState.index = null;
+          persistMedia();
+          renderAll();
+          markDirty();
+        });
+
+        const thumb = document.createElement("div");
+        thumb.className = "thumb " + (item.type === "video" ? "video" : "image");
+        if (item.type === "image") {
+          thumb.style.backgroundImage = "url(\"" + item.src + "\")";
+        } else {
+          thumb.textContent = "VIDEO";
+        }
+
+        const meta = document.createElement("div");
+        meta.className = "media-meta";
+
+        const titleInput = document.createElement("input");
+        titleInput.type = "text";
+        titleInput.className = "meta-input";
+        titleInput.placeholder = "Judul slide";
+        titleInput.value = item.label || "";
+        titleInput.addEventListener("input", () => {
+          item.label = titleInput.value.trim();
+          persistMedia();
+          markDirty();
+        });
+
+        const captionInput = document.createElement("input");
+        captionInput.type = "text";
+        captionInput.className = "meta-input meta-input--small";
+        captionInput.placeholder = "Deskripsi singkat";
+        captionInput.value = item.caption || "";
+        captionInput.addEventListener("input", () => {
+          item.caption = captionInput.value.trim();
+          persistMedia();
+          markDirty();
+        });
+
+        const durationInput = document.createElement("input");
+        durationInput.type = "number";
+        durationInput.min = "1";
+        durationInput.step = "1";
+        durationInput.className = "meta-input meta-input--small";
+        durationInput.placeholder = "Durasi (detik)";
+        durationInput.value = item.duration ? String(item.duration) : "";
+        durationInput.addEventListener("input", () => {
+          item.duration = parseDuration(durationInput.value);
+          persistMedia();
+          markDirty();
+        });
+
+        const sub = document.createElement("div");
+        sub.className = "sub";
+        const sourceText = item.src && item.src.startsWith("data:") ? "Upload lokal" : "URL eksternal";
+        const typeText = item.type === "video" ? "VIDEO" : "FOTO";
+        sub.textContent = typeText + " • " + sourceText;
+
+        meta.appendChild(titleInput);
+        meta.appendChild(captionInput);
+        meta.appendChild(durationInput);
+        meta.appendChild(sub);
+
+        const actions = document.createElement("div");
+        actions.className = "media-actions";
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "btn ghost";
+        removeBtn.textContent = "Hapus";
+        removeBtn.addEventListener("click", () => {
+          items.splice(index, 1);
+          persistMedia();
+          renderAll();
+          markDirty();
+        });
+        actions.appendChild(removeBtn);
+
+        row.appendChild(handle);
+        row.appendChild(thumb);
+        row.appendChild(meta);
+        row.appendChild(actions);
+        container.appendChild(row);
+      });
+    }
+    function renderPreviewList(container, items, emptyText) {
+      container.innerHTML = "";
+      if (!items.length) {
+        const li = document.createElement("li");
+        li.innerHTML = "<span class=\"index\">--</span><span class=\"text\">" + emptyText + "</span>";
+        container.appendChild(li);
+        return;
+      }
+
+      items.slice(0, 4).forEach((item, idx) => {
+        const li = document.createElement("li");
+        li.innerHTML = "<span class=\"index\">" + String(idx + 1).padStart(2, "0") + "</span><span class=\"text\">" + item + "</span>";
+        container.appendChild(li);
+      });
+    }
+
+    function buildPreviewSlides(items) {
+      previewStage.innerHTML = "";
+      items.forEach(item => {
+        const slide = document.createElement("div");
+        slide.className = "preview-slide";
+        slide.dataset.type = item.type;
+
+        if (item.type === "image") {
+          const bg = item.src ? "url(\"" + item.src + "\")" : item.bg || "linear-gradient(135deg, #6a2fd1, #b66bff)";
+          slide.style.backgroundImage = bg;
+        } else {
+          const video = document.createElement("video");
+          video.src = item.src;
+          video.muted = true;
+          video.playsInline = true;
+          video.preload = "metadata";
+          slide.appendChild(video);
+        }
+
+        previewStage.appendChild(slide);
+      });
+    }
+
+    function showPreviewSlide(index) {
+      const slides = previewStage.querySelectorAll(".preview-slide");
+      if (!slides.length) return;
+
+      slides.forEach(slide => {
+        slide.classList.remove("active");
+        const video = slide.querySelector("video");
+        if (video) video.pause();
+      });
+
+      previewIndex = index % slides.length;
+      const currentSlide = slides[previewIndex];
+      currentSlide.classList.add("active");
+
+      const currentItem = previewItems[previewIndex] || {};
+      const type = currentItem.type || "image";
+      previewChip.textContent = type === "video" ? "VIDEO" : "FOTO";
+      previewTitle.textContent = currentItem.label || (type === "video" ? "Video Kegiatan" : "Foto Kegiatan");
+      previewDesc.textContent = currentItem.caption || "Dokumentasi kegiatan terbaru.";
+      previewCount.textContent = (previewIndex + 1) + " / " + slides.length;
+
+      if (type === "video") {
+        const video = currentSlide.querySelector("video");
+        if (video) {
+          video.currentTime = 0;
+          video.play().catch(() => {});
+        }
+      }
+
+      clearTimeout(previewTimer);
+      const customDuration = parseDuration(currentItem.duration);
+      const durationMs = customDuration ? customDuration * 1000 : (type === "video" ? 8000 : 6000);
+      previewTimer = setTimeout(() => showPreviewSlide(previewIndex + 1), durationMs);
+    }
+
+    function updatePreviewMedia() {
+      previewItems = state.media.length ? state.media : fallbackPreviewMedia;
+      buildPreviewSlides(previewItems);
+      showPreviewSlide(0);
+    }
+
+    function updatePreviewContent() {
+      const today = getTodayInfo();
+      const newsItems = parseLines(newsInput.value);
+      const tasksItems = parseLines(tasksInput.value);
+
+      const filteredNews = newsTodayToggle.checked ? filterDaily(newsItems, today) : newsItems;
+      const filteredTasks = tasksTodayToggle.checked ? filterDaily(tasksItems, today) : tasksItems;
+
+      renderPreviewList(previewNews, filteredNews, "Belum ada berita.");
+      renderPreviewList(previewTasks, filteredTasks, "Belum ada tugas.");
+      previewRunning.textContent = runningInput.value.trim() || defaults.running;
+    }
+
+    function updatePreviewClock() {
+      const now = new Date();
+      previewClock.textContent = now.toLocaleTimeString("id-ID");
+      previewDate.textContent = now.toLocaleDateString("id-ID", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+      previewPeriod.textContent = getPeriod(now.getHours());
+    }
+
+    function renderAll() {
+      renderMediaList(mediaList, state.media);
+      const imageTotal = state.media.filter(item => item.type === "image").length;
+      const videoTotal = state.media.filter(item => item.type === "video").length;
+      imageCount.textContent = imageTotal;
+      videoCount.textContent = videoTotal;
+      mediaCount.textContent = state.media.length;
+      updatePreviewMedia();
+      updatePreviewContent();
+    }
+
+    function addMediaUrl(input, type, titleInput, captionInput, durationInput, fallbackLabel) {
+      const url = input.value.trim();
+      if (!url) return;
+      const title = titleInput.value.trim();
+      const caption = captionInput.value.trim();
+      const duration = parseDuration(durationInput.value);
+      state.media.unshift({
+        type: type,
+        src: url,
+        label: title || fallbackLabel,
+        caption: caption,
+        duration: duration
+      });
+      input.value = "";
+      titleInput.value = "";
+      captionInput.value = "";
+      durationInput.value = "";
+      if (persistMedia()) {
+        renderAll();
+        markDirty();
+      }
+    }
+
+    function handleFiles(files, type, titleInput, captionInput, durationInput) {
+      const title = titleInput.value.trim();
+      const caption = captionInput.value.trim();
+      const duration = parseDuration(durationInput.value);
+      Array.from(files).forEach(file => {
+        if (file.size > MAX_FILE_SIZE) {
+          statusText.textContent = "Maksimal 50MB per file.";
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          state.media.unshift({
+            type: type,
+            src: event.target.result,
+            label: title || file.name,
+            caption: caption,
+            duration: duration
+          });
+          if (persistMedia()) {
+            renderAll();
+            markDirty();
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+      titleInput.value = "";
+      captionInput.value = "";
+      durationInput.value = "";
+    }
+
+    document.getElementById("add-image-url").addEventListener("click", () => {
+      addMediaUrl(imageUrlInput, "image", imageTitleInput, imageCaptionInput, imageDurationInput, "Foto");
+    });
+
+    document.getElementById("add-video-url").addEventListener("click", () => {
+      addMediaUrl(videoUrlInput, "video", videoTitleInput, videoCaptionInput, videoDurationInput, "Video");
+    });
+
+    imageFileInput.addEventListener("change", () => {
+      handleFiles(imageFileInput.files, "image", imageTitleInput, imageCaptionInput, imageDurationInput);
+      imageFileInput.value = "";
+    });
+
+    videoFileInput.addEventListener("change", () => {
+      handleFiles(videoFileInput.files, "video", videoTitleInput, videoCaptionInput, videoDurationInput);
+      videoFileInput.value = "";
+    });
+
+    document.getElementById("clear-media").addEventListener("click", () => {
+      state.media = [];
+      persistMedia();
+      renderAll();
+      markDirty();
+    });
+
+    document.getElementById("publish-btn").addEventListener("click", () => {
+      state.running = runningInput.value.trim() || defaults.running;
+      state.news = parseLines(newsInput.value);
+      state.tasks = parseLines(tasksInput.value);
+      state.newsToday = newsTodayToggle.checked;
+      state.tasksToday = tasksTodayToggle.checked;
+
+      localStorage.setItem(STORAGE.running, state.running);
+      localStorage.setItem(STORAGE.news, JSON.stringify(state.news));
+      localStorage.setItem(STORAGE.tasks, JSON.stringify(state.tasks));
+      localStorage.setItem(STORAGE.newsToday, String(state.newsToday));
+      localStorage.setItem(STORAGE.tasksToday, String(state.tasksToday));
+      persistMedia();
+      flashStatus("Data dipublish ke display.");
+      statusText.textContent = "Terakhir dipublish: " + new Date().toLocaleTimeString("id-ID");
+    });
+
+    runningInput.addEventListener("input", () => {
+      markDirty();
+      updatePreviewContent();
+    });
+
+    newsInput.addEventListener("input", () => {
+      markDirty();
+      updatePreviewContent();
+    });
+
+    tasksInput.addEventListener("input", () => {
+      markDirty();
+      updatePreviewContent();
+    });
+
+    newsTodayToggle.addEventListener("change", () => {
+      markDirty();
+      updatePreviewContent();
+    });
+
+    tasksTodayToggle.addEventListener("change", () => {
+      markDirty();
+      updatePreviewContent();
+    });
+
+    renderAll();
+    updatePreviewClock();
+    setInterval(updatePreviewClock, 1000);
+  </script>
+</body>
+</html>
